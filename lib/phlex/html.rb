@@ -140,7 +140,11 @@ module Phlex
 			@_view_context = view_context
 			@_parent = parent
 
-			around_template { template { yield_content(&block) } }
+			around_template do
+				template do |obj|
+					yield_content(obj || self, &block)
+				end
+			end
 
 			self.class.rendered_at_least_once ||= true
 
@@ -253,11 +257,11 @@ module Phlex
 			nil
 		end
 
-		private def yield_content(&block)
+		private def yield_content(obj = self, &block)
 			return unless block_given?
 
 			original_length = @_target.length
-			content = yield(self)
+			content = yield(obj)
 			unchanged = (original_length == @_target.length)
 
 			if unchanged
